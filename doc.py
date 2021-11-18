@@ -130,7 +130,7 @@ res1 = (
     # | beam.Map(op)
     | "Combine Globally" >> beam.CombineGlobally(AverageFn())
     # | "Calculating mean" >>
-    beam.CombineValues(beam.combiners.MeanCombineFn())
+    | beam.CombineValues(beam.combiners.MeanCombineFn())
     #
     | "Apply Formatting" >> beam.Map(FormatText)
     | "write" >> beam.io.WriteToText("gs://dataflow_storage_1/Fiction_res1")
