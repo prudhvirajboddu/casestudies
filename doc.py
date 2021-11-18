@@ -57,7 +57,7 @@ def accumulate(element):
 
 def op(s_count):
     (summ2, c2) = ind_counts
-    return summ2/c2 if s_count else float('NaN')
+    return summ2/c2 if count else float('NaN')
 
 
 options = PipelineOptions()
@@ -115,8 +115,7 @@ if ret.state == PipelineState.DONE:
 else:
     print('Error Running beam pipeline')
     # read data and split based on ‘,’
-books = (p | beam.io.ReadFromText("gs://case_study1_dataset/book_ratings.csv") |
-         beam.Map(Split))
+books = (p | beam.io.ReadFromText("gs://case_study1_dataset/book_ratings.csv") | beam.Map(Split))
 # Filter records having fiction , map each rating as a set (rating,1), use
 # combineperkey to count the number of each rating, run the average function, write
 # result to Fiction_result1
@@ -147,7 +146,7 @@ Res2 = (
     # | beam.Map(accumulate)
     # | beam.Map(op)| "Combine Globally" >> beam.CombineGlobally(AverageFn())
     # | "Calculating mean" >>
-    beam.CombineValues(beam.combiners.MeanCombineFn())
+    | beam.CombineValues(beam.combiners.MeanCombineFn())
     #
     | "Apply Formatting" >> beam.Map(FormatText)
     | "write" >> beam.io.WriteToText("gs://dataflow_storage_1/Non_Fiction_res1")
@@ -166,8 +165,11 @@ Res3 = (
 # map each record’s 0 th column that is name with value 1 , run distinct function to
 # get the distinct values of name, run top.of(5) to sort and get the last5 books
 # alphabetically and store in storage bucket last5
-f_res = (books | beam.Map(lambda rec: (rec[0], 1)) | beam.Distinct(
-) | beam.combiners.Top.Of(5) | beam.io.WriteToText("gs://dataflow_storage_1/Last_5"))
+f_res = (books 
+        | beam.Map(lambda rec: (rec[0], 1)) 
+        | beam.Distinct() 
+        | beam.combiners.Top.Of(5) 
+        | beam.io.WriteToText("gs://dataflow_storage_1/Last_5"))
 pipeline_result = DataflowRunner().run_pipeline(p, options=options)
 url = ('https://console.cloud.google.com/dataflow/jobs/%s/%s?project=%s' %
        (pipeline_result._job.location, pipeline_result._job.id, pipeline_result._job.projectId))
